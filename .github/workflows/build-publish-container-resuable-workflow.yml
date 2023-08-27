@@ -86,7 +86,7 @@ jobs:
         name: Build and Push container images
         uses: docker/build-push-action@v4
         with:
-          platforms: $${{ inputs.image-platforms }}
+          platforms: ${{ inputs.image-platforms }}
           push: true
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}

@@ -104,7 +104,7 @@ jobs:
         run: sudo apt-get -y install skopeo
 
       - name: Copy Image to Quay.io - latest tag
-        run: skopeo copy --dest-creds="${QUAY_USERNAME}:${QUAY_TOKEN}" docker://docker.io/${IMAGE_FULL_NAME}@${IMAGE_DIGEST} docker://quay.io/${TAG}
+        run: skopeo copy  --all --dest-creds="${QUAY_USERNAME}:${QUAY_TOKEN}" docker://docker.io/${IMAGE_FULL_NAME}@${IMAGE_DIGEST} docker://quay.io/${TAG}
         env:
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
           QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
@@ -112,7 +112,7 @@ jobs:
           TAG: ${{ fromJSON(steps.docker_meta.outputs.json).tags[0] }}
       
       - name: Copy Image to Quay.io - sha tag
-        run: skopeo copy --dest-creds="${QUAY_USERNAME}:${QUAY_TOKEN}" docker://docker.io/${IMAGE_FULL_NAME}@${IMAGE_DIGEST} docker://quay.io/${TAG}
+        run: skopeo copy --all --dest-creds="${QUAY_USERNAME}:${QUAY_TOKEN}" docker://docker.io/${IMAGE_FULL_NAME}@${IMAGE_DIGEST} docker://quay.io/${TAG}
         env:
           QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
           QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}

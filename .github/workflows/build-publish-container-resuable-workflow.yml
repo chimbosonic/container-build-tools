@@ -69,6 +69,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Login to Quay.io
+        uses: docker/login-action@v2 
+        with:
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
       - id: docker_meta
         uses: docker/metadata-action@v4
         with:
@@ -100,23 +106,9 @@ jobs:
           IMAGE_DIGEST: ${{ steps.docker_build.outputs.digest }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
       
-      - name: Install skopeo
-        env: # Have to install 1.9.3 manually due to the need for --multi-arch
-          SKOPEO_DEB_URL: http://mirrors.kernel.org/ubuntu/pool/universe/s/skopeo/skopeo_1.9.3+ds1-1_amd64.deb
-        run: deb=$(curl -w "%{filename_effective}" -LO ${SKOPEO_DEB_URL}) && sudo dpkg -i $deb && rm $deb && unset deb
-
-      - name: Copy Image to Quay.io - latest tag
-        run: skopeo copy --multi-arch all --dest-creds="${QUAY_USERNAME}:${QUAY_TOKEN}" docker://docker.io/${IMAGE_FULL_NAME}@${IMAGE_DIGEST} docker://quay.io/${TAG}
-        env:
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-          QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
-          IMAGE_DIGEST: ${{ steps.docker_build.outputs.digest }}
-          TAG: ${{ fromJSON(steps.docker_meta.outputs.json).tags[0] }}
-      
-      - name: Copy Image to Quay.io - sha tag
-        run: skopeo copy --multi-arch all --dest-creds="${QUAY_USERNAME}:${QUAY_TOKEN}" docker://docker.io/${IMAGE_FULL_NAME}@${IMAGE_DIGEST} docker://quay.io/${TAG}
-        env:
-          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-          QUAY_TOKEN: ${{ secrets.QUAY_TOKEN }}
-          IMAGE_DIGEST: ${{ steps.docker_build.outputs.digest }}
-          TAG: ${{ fromJSON(steps.docker_meta.outputs.json).tags[1] }}
+      - name: Push image to Quay.io
+        run: |
+          docker buildx imagetools create \
+            --tag quay.io/${{ fromJSON(steps.docker_meta.outputs.json).tags[0] }} \
+            --tag quay.io/${{ fromJSON(steps.docker_meta.outputs.json).tags[1] }} \
+            ${{ fromJSON(steps.docker_meta.outputs.json).tags[0] }}

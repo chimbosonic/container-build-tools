@@ -18,6 +18,11 @@ on:
       image-documentation:
         required: true
         type: string
+      image-platforms:
+        required: true
+        type: string
+        default: linux/amd64
+        description: list of platforms to build the image for
     secrets:
       DOCKERHUB_USERNAME:
         required: true
@@ -81,7 +86,7 @@ jobs:
         name: Build and Push container images
         uses: docker/build-push-action@v4
         with:
-          platforms: linux/amd64
+          platforms: $${{ inputs.image-platforms }}
           push: true
           tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
